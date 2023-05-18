@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <form  method="post">
+      {%csrf_token%}
+      <label for="phone">Phone: </label>
+      <input type="text" id="phone" name="phone" value="">
+      <br>
+      <label for="password">Password: </label>
+      <input type="password" id="password" name="password" value="">
+      <input type="submit" name="" value="login">
+    </form>
+  </body>
+</html>

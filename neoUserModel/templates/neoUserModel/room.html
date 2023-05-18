@@ -1,0 +1,100 @@
+<!-- chat/templates/chat/room.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+    <style>
+      #chat-log{
+        overflow: scroll;
+      }
+    </style>
+</head>
+<body>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <input id="chat-message-input" type="text" size="100"><br>
+    <input id="chat-message-submit" type="button" value="Send">
+    {{ room_code|json_script:"code" }}
+
+    <script>
+        // function setScroll(){
+        //   var messageBody = document.querySelector('#chat-log');
+        //   messageBody.scrollTop = messageBody.scrollHeight;
+        // }
+        const code = JSON.parse(document.getElementById('code').textContent);
+
+        // console.log("{{request.user.username}}");
+        // fetch(`http://${window.location.host}/fetch-messages/${code}/`)
+        // .then((response) => response.json())
+        // .then((data) => {
+        //   const messages = data.messages;
+        //   // console.log(messages);
+        //   document.querySelector('#chat-log').value ="";
+        //   messages.forEach((item)=>{
+        //     document.querySelector('#chat-log').value += (item.username+":> "+item.text + '\n');
+
+        //   })
+
+        // });
+
+        // window.onload = function() {
+        //   yourFunction(param1, param2);
+        // };
+
+        // setScroll();
+        // console.log(code);
+        // let param = encodeURIComponent('{{token}}');
+        let url = ``;
+        var myHeaders = new Headers();
+        myHeaders.append("Authorization", "Token {{token}}");
+        var requestOptions = {
+          method: 'GET',
+          headers: myHeaders,
+          redirect: 'follow'
+        };
+
+        console.log("{{token}}")
+        fetch("http://127.0.0.1:8000/get-json-web-token/", requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            let param = encodeURIComponent(result.access);
+            url = `ws://${window.location.host}/ws/chat/${code}/?token=`+ param;
+            const chatSocket = new WebSocket(url);
+
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                document.querySelector('#chat-log').value += (":> "+data.message + '\n');
+                // setScroll();
+                
+            };
+
+            chatSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly');
+            };
+
+            document.querySelector('#chat-message-input').focus();
+            document.querySelector('#chat-message-input').onkeyup = function(e) {
+                if (e.keyCode === 13) {  // enter, return
+                    document.querySelector('#chat-message-submit').click();
+                }
+            };
+
+            document.querySelector('#chat-message-submit').onclick = function(e) {
+                // setScroll();
+                const messageInputDom = document.querySelector('#chat-message-input');
+                const message = messageInputDom.value;
+                chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'room_code':code,
+                    // 'from_id':'{{from_id}}',
+                    'to_id':'{{to_id}}',
+                    // 'nick_name':'{{nick_name}}'
+                }));
+                messageInputDom.value = '';
+            };
+
+            })
+        .catch(error => console.log('error', error));
+    </script>
+</body>
+</html>

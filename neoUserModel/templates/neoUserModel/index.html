@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Rooms</title>
+</head>
+<body>
+  <h1>welcome {{nick_name}}</h1>
+  <div id="list">
+    
+  </div>
+  <script type="text/javascript">
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", "Token {{token}}");
+
+    var requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow'
+    };
+
+console.log("{{token}}")
+
+fetch(`http://${window.location.host}/v1/friend-list/1/`, requestOptions)
+  .then(response => response.json())
+  .then((result) =>{
+    // console.log(typeof result);
+    var listDiv = document.getElementById('list');
+    friend_list = result.friend_list;
+    friend_list.forEach((each)=>{
+      var newElement = document.createElement('a');
+      newElement.setAttribute('href',`http://${window.location.host}/v1/chatlog/${each.nick_name}/${each.did}/${each.channel_room_code}/`)
+      newElement.innerText = each.nick_name;
+      listDiv.appendChild(newElement);
+      listDiv.appendChild(document.createElement('br'))
+    });
+  })
+  .catch(error => console.log('error', error));
+  </script>
+</body>
+</html>
